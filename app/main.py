@@ -36,7 +36,7 @@ def move():
     data = bottle.request.json
 
     food_move = find_food(data)
-    print('food_move={}'.format(food_move.direction))
+    print('food_move={}'.format(food_move.direction if food_move else 'None'))
 
     avoid_moves = avoid_snakes(data)
     print('avoid_snake_moves={}'.format(moves_to_string(avoid_moves)))
@@ -46,10 +46,11 @@ def move():
 
     moves = []
     taunt = ''
-    for avoid_move in avoid_moves:
-        if avoid_move.direction == food_move.direction:
-            moves.append(avoid_move)
-            taunt = 'food move: '
+    if food_move is not None:
+        for avoid_move in avoid_moves:
+            if avoid_move.direction == food_move.direction:
+                moves.append(avoid_move)
+                taunt = 'food move: '
 
     if len(moves) == 0 and len(avoid_moves) > 0:
         moves.append(avoid_moves[0])
@@ -76,11 +77,16 @@ def get_snake(game_state, id):
 
 def find_food(game_state):
     my_snake = get_snake(game_state, game_state['you'])
+    my_health = my_snake['health_points']
 
     # print('my_snake={}'.format(my_snake))
 
     head = my_snake['coords'][0]
     move = None
+
+    # if my_health > 65:
+    #     return move
+
     if game_state['food'][0][0] < head[0]:
         move = Move('left')
 
@@ -120,22 +126,22 @@ def avoid_snake(my_id, my_length, snake, moves):
         for move in moves:
             for x in range(1, 3, -1):
                 if move.direction == 'left':
-                    if is_same_square(Move(None, [move.coords[0] - x, move.coords[0]]), Move(None, part)):
+                    if is_same_square(Move(None, [move.coords[0] - x, move.coords[1]]), Move(None, part)):
                         moves.remove(move)
                         moves.append(move)
 
                 if move.direction == 'right':
-                    if is_same_square(Move(None, [move.coords[0] + x, move.coords[0]]), Move(None, part)):
+                    if is_same_square(Move(None, [move.coords[0] + x, move.coords[1]]), Move(None, part)):
                         moves.remove(move)
                         moves.append(move)
 
                 if move.direction == 'up':
-                    if is_same_square(Move(None, [move.coords[0], move.coords[0] + x]), Move(None, part)):
+                    if is_same_square(Move(None, [move.coords[0], move.coords[1] + x]), Move(None, part)):
                         moves.remove(move)
                         moves.append(move)
 
                 if move.direction == 'down':
-                    if is_same_square(Move(None, [move.coords[0], move.coords[0] - x]), Move(None, part)):
+                    if is_same_square(Move(None, [move.coords[0], move.coords[1] - x]), Move(None, part)):
                         moves.remove(move)
                         moves.append(move)
 
